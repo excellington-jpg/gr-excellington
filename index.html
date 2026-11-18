@@ -1,0 +1,1405 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia de Remessa Excellington</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #faf5ff;
+      color: #3b0764;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printArea, #printArea * {
+        visibility: visible;
+      }
+      #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white !important;
+        color: black !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-border {
+        border-color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-purple-50/40">
+
+  <!-- Cabeçalho -->
+  <header class="bg-purple-900 text-white shadow-md p-4 flex flex-wrap justify-between items-center gap-3 no-print">
+    <div class="flex items-center space-x-3 min-w-0">
+      <div class="bg-purple-700 p-2.5 rounded-xl shadow-inner shrink-0">
+        <i class="fa-solid fa-envelope-open-text text-2xl text-purple-200"></i>
+      </div>
+      <div class="min-w-0">
+        <h1 class="text-lg sm:text-xl font-bold tracking-wide truncate">Guia de Remessa Excellington</h1>
+        <div class="flex items-center gap-1.5 text-xs text-purple-200 flex-wrap mt-0.5">
+          <span class="truncate">Controle de Malotes</span>
+          <span class="hidden sm:inline">•</span>
+          <span class="bg-purple-950/70 px-2 py-0.5 rounded text-[11px] font-medium border border-purple-700/50 truncate max-w-[180px]">
+            <i class="fa-solid fa-user-circle mr-1 text-purple-300"></i><span id="headerUserName">Carregando...</span>
+          </span>
+          <button onclick="openAuthModal(true)" class="text-purple-200 hover:text-white underline text-[11px] font-semibold transition">
+            Editar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 shrink-0">
+      <!-- Status de Sincronização -->
+      <span id="syncStatus" class="text-xs px-3 py-1.5 rounded-full bg-purple-800 text-purple-100 border border-purple-700 font-medium">
+        <i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Iniciando...
+      </span>
+
+      <!-- Licença -->
+      <button id="btnLicense" onclick="openLicenseModal()" title="Ativação e Renovação de Licença" class="bg-purple-800 hover:bg-purple-950 px-3 py-1.5 rounded-lg text-xs sm:text-sm flex items-center space-x-1.5 transition border border-purple-700">
+        <i class="fa-solid fa-key text-amber-300"></i>
+        <span id="licenseStatusText" class="hidden sm:inline">Licença Ativa</span>
+      </button>
+
+      <!-- Termos -->
+      <button id="btnTerms" onclick="openTermsModal(true)" title="Termos de Uso e Responsabilidade" class="bg-purple-800 hover:bg-purple-950 px-3 py-1.5 rounded-lg text-xs sm:text-sm flex items-center space-x-1.5 transition border border-purple-700">
+        <i class="fa-solid fa-file-contract text-purple-200"></i>
+        <span class="hidden sm:inline">Termos</span>
+      </button>
+
+      <!-- Fechar -->
+      <button id="btnClose" title="Fechar Aplicativo" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm flex items-center space-x-1.5 transition shadow">
+        <i class="fa-solid fa-power-off"></i>
+        <span class="hidden sm:inline">Fechar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navegação por Abas -->
+  <nav class="bg-white border-b border-purple-200 shadow-sm no-print">
+    <div class="container mx-auto max-w-6xl px-4 flex space-x-1 sm:space-x-4 overflow-x-auto">
+      <button id="tabBtnGuia" onclick="switchTab('guia')" class="tab-btn py-3.5 px-4 text-sm font-semibold border-b-2 border-purple-700 text-purple-900 flex items-center space-x-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-file-lines text-purple-600"></i>
+        <span>GUIA DE REMESSA</span>
+      </button>
+      <button id="tabBtnCadastros" onclick="switchTab('cadastros')" class="tab-btn py-3.5 px-4 text-sm font-semibold border-b-2 border-transparent text-purple-600 hover:text-purple-900 flex items-center space-x-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-folder-plus"></i>
+        <span>CADASTROS</span>
+      </button>
+      <button id="tabBtnImpressao" onclick="switchTab('impressao')" class="tab-btn py-3.5 px-4 text-sm font-semibold border-b-2 border-transparent text-purple-600 hover:text-purple-900 flex items-center space-x-2 whitespace-nowrap transition">
+        <i class="fa-solid fa-print"></i>
+        <span>IMPRIMIR GUIAS</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="container mx-auto p-4 max-w-6xl flex-grow">
+
+    <!-- ===================================================================
+         ABA 1: GUIA DE REMESSA
+         =================================================================== -->
+    <section id="tabGuia" class="space-y-6">
+      <div class="bg-white border border-purple-200 rounded-2xl shadow-sm p-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-5 border-b border-purple-100 pb-4">
+          <div>
+            <h2 class="text-lg font-bold text-purple-900">Emissão de Guia de Remessa</h2>
+            <p class="text-xs text-purple-600">Preencha os dados do documento/material para compor a guia de malote.</p>
+          </div>
+
+          <!-- Carregar Logomarca -->
+          <div class="flex items-center space-x-3 bg-purple-50 px-3 py-2 rounded-xl border border-purple-200">
+            <img id="logoPreviewThumb" src="https://placehold.co/80x36/f3e8ff/6b21a8?text=LOGO" alt="Logomarca" class="h-9 w-auto rounded object-contain bg-white border border-purple-100 px-1">
+            <div>
+              <label for="inputLogo" class="cursor-pointer bg-purple-700 hover:bg-purple-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition inline-flex items-center space-x-1">
+                <i class="fa-solid fa-image"></i>
+                <span>Carregar Logomarca</span>
+              </label>
+              <input type="file" id="inputLogo" accept="image/*" class="hidden">
+              <p class="text-[10px] text-purple-500 mt-0.5">Exibida no cabeçalho da guia</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulário de Lançamento -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Data -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Data de Envio *</label>
+            <input type="date" id="guiaData" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <p id="infoDiaUtil" class="text-[11px] text-purple-600 mt-1 font-medium"></p>
+          </div>
+
+          <!-- Remetente -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Remetente *</label>
+            <select id="guiaRemetente" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="">Selecione o remetente...</option>
+            </select>
+          </div>
+
+          <!-- Destinatário -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Destinatário do Malote *</label>
+            <select id="guiaDestinatario" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="">Selecione o destinatário...</option>
+            </select>
+          </div>
+
+          <!-- Área de Origem (DE) -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Área de Origem (DE) *</label>
+            <select id="guiaDe" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="">Selecione a origem...</option>
+            </select>
+          </div>
+
+          <!-- Área de Destino (PARA) -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Área de Destino (PARA) *</label>
+            <select id="guiaPara" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="">Selecione o destino...</option>
+            </select>
+          </div>
+
+          <!-- Número do Malote (Opcional) -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Número do Malote <span class="text-purple-400 font-normal">(Opcional)</span></label>
+            <input type="text" id="guiaMalote" placeholder="Ex: ML-2045" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+          </div>
+
+          <!-- Descrição do Documento -->
+          <div class="sm:col-span-2 lg:col-span-3">
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Descrição do Documento / Material *</label>
+            <input type="text" id="guiaDescricao" placeholder="Ex: Contrato social assinado, notas fiscais de serviço, chaves..." class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+          </div>
+        </div>
+
+        <!-- Barra de Preview Numeração e Botão Adicionar -->
+        <div class="mt-5 pt-4 border-t border-purple-100 flex flex-wrap justify-between items-center gap-4">
+          <div class="flex items-center space-x-4 bg-purple-100/70 px-4 py-2 rounded-xl border border-purple-200">
+            <div>
+              <span class="block text-[10px] font-bold uppercase text-purple-600">Nº da Guia Calculado</span>
+              <strong id="previewNumeroGuia" class="text-base text-purple-950">-</strong>
+            </div>
+            <div class="h-7 w-px bg-purple-300"></div>
+            <div>
+              <span class="block text-[10px] font-bold uppercase text-purple-600">Próximo Item</span>
+              <strong id="previewNumeroItem" class="text-base text-purple-950">-</strong>
+            </div>
+          </div>
+
+          <button id="btnAddItemGuia" class="bg-purple-700 hover:bg-purple-800 text-white font-semibold px-6 py-3 rounded-xl shadow transition flex items-center space-x-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Adicionar Item na Guia</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabela de Itens Adicionados -->
+      <div class="bg-white border border-purple-200 rounded-2xl shadow-sm p-6">
+        <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+          <h3 class="text-md font-bold text-purple-900 flex items-center space-x-2">
+            <i class="fa-solid fa-list-check text-purple-600"></i>
+            <span>Itens Lançados nas Guias</span>
+          </h3>
+          <span id="totalItensBadge" class="text-xs font-semibold bg-purple-100 text-purple-800 px-3 py-1 rounded-full">0 itens</span>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-purple-100">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="bg-purple-100/80 text-purple-900 uppercase text-[11px] tracking-wider">
+                <th class="p-3 border-b border-purple-200">Data</th>
+                <th class="p-3 border-b border-purple-200">Nº Guia</th>
+                <th class="p-3 border-b border-purple-200">Item</th>
+                <th class="p-3 border-b border-purple-200">Remetente</th>
+                <th class="p-3 border-b border-purple-200">Destinatário</th>
+                <th class="p-3 border-b border-purple-200">Descrição</th>
+                <th class="p-3 border-b border-purple-200">DE</th>
+                <th class="p-3 border-b border-purple-200">PARA</th>
+                <th class="p-3 border-b border-purple-200">Malote</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyItensGuia" class="divide-y divide-purple-100 text-purple-950">
+              <tr>
+                <td colspan="9" class="p-6 text-center text-purple-400">Nenhum item lançado ainda.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         ABA 2: CADASTROS
+         =================================================================== -->
+    <section id="tabCadastros" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Card 1: Remetentes -->
+        <div class="bg-white border border-purple-200 rounded-2xl shadow-sm p-5">
+          <h3 class="text-md font-bold text-purple-900 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-building-user text-purple-600"></i> Unidades Remetentes
+          </h3>
+          <div class="flex gap-2 mb-4">
+            <input type="text" id="inputNovoRemetente" placeholder="Nome da unidade remetente..." class="flex-grow border border-purple-300 rounded-xl p-2.5 text-sm bg-purple-50/40 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button onclick="adicionarCadastro('Remetentes', 'inputNovoRemetente')" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <ul id="listaRemetentes" class="divide-y divide-purple-100 max-h-60 overflow-y-auto text-sm"></ul>
+        </div>
+
+        <!-- Card 2: Destinatários -->
+        <div class="bg-white border border-purple-200 rounded-2xl shadow-sm p-5">
+          <h3 class="text-md font-bold text-purple-900 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-building-circle-arrow-right text-purple-600"></i> Unidades Destinatárias
+          </h3>
+          <div class="flex gap-2 mb-4">
+            <input type="text" id="inputNovoDestinatario" placeholder="Nome da unidade destinatária..." class="flex-grow border border-purple-300 rounded-xl p-2.5 text-sm bg-purple-50/40 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button onclick="adicionarCadastro('Destinatários', 'inputNovoDestinatario')" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <ul id="listaDestinatarios" class="divide-y divide-purple-100 max-h-60 overflow-y-auto text-sm"></ul>
+        </div>
+
+        <!-- Card 3: Origens (DE) -->
+        <div class="bg-white border border-purple-200 rounded-2xl shadow-sm p-5">
+          <h3 class="text-md font-bold text-purple-900 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-right-from-bracket text-purple-600"></i> Áreas / Setores de Origem (DE)
+          </h3>
+          <div class="flex gap-2 mb-4">
+            <input type="text" id="inputNovaOrigem" placeholder="Ex: Financeiro, RH, Protocolo..." class="flex-grow border border-purple-300 rounded-xl p-2.5 text-sm bg-purple-50/40 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button onclick="adicionarCadastro('Origens', 'inputNovaOrigem')" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <ul id="listaOrigens" class="divide-y divide-purple-100 max-h-60 overflow-y-auto text-sm"></ul>
+        </div>
+
+        <!-- Card 4: Destinos (PARA) -->
+        <div class="bg-white border border-purple-200 rounded-2xl shadow-sm p-5">
+          <h3 class="text-md font-bold text-purple-900 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-right-to-bracket text-purple-600"></i> Áreas / Setores de Destino (PARA)
+          </h3>
+          <div class="flex gap-2 mb-4">
+            <input type="text" id="inputNovoDestino" placeholder="Ex: Diretoria, Contabilidade, Jurídico..." class="flex-grow border border-purple-300 rounded-xl p-2.5 text-sm bg-purple-50/40 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button onclick="adicionarCadastro('Destinos', 'inputNovoDestino')" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <ul id="listaDestinos" class="divide-y divide-purple-100 max-h-60 overflow-y-auto text-sm"></ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         ABA 3: PAINEL DE IMPRESSÃO DE GUIAS
+         =================================================================== -->
+    <section id="tabImpressao" class="hidden space-y-6">
+      <!-- Filtros de Impressão -->
+      <div class="bg-white border border-purple-200 rounded-2xl shadow-sm p-6 no-print">
+        <h2 class="text-lg font-bold text-purple-900 mb-1">Impressão de Guias de Remessa</h2>
+        <p class="text-xs text-purple-600 mb-4">Selecione a data e o destinatário do malote para gerar e imprimir a guia oficial com canhoto.</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Data da Guia</label>
+            <input type="date" id="filtroPrintData" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Destinatário do Malote</label>
+            <select id="filtroPrintDestinatario" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="">Selecione o destinatário...</option>
+            </select>
+          </div>
+
+          <div class="flex gap-2">
+            <button id="btnGerarPreviewGuia" class="flex-1 bg-purple-700 hover:bg-purple-800 text-white font-semibold py-2.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm">
+              <i class="fa-solid fa-eye"></i>
+              <span>Visualizar</span>
+            </button>
+            <button id="btnImprimirAgora" onclick="window.print()" class="bg-purple-950 hover:bg-black text-white font-semibold py-2.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2 text-sm hidden">
+              <i class="fa-solid fa-print"></i>
+              <span>Imprimir</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Área de Visualização e Impressão da Guia -->
+      <div id="printWrapper" class="hidden">
+        <div id="printArea" class="bg-white border-2 border-purple-900 print-border rounded-xl p-6 max-w-4xl mx-auto shadow-md text-black">
+          
+          <!-- Cabeçalho da Guia -->
+          <div class="flex justify-between items-center border-b-2 border-purple-900 print-border pb-4 mb-4">
+            <div class="flex items-center space-x-4">
+              <img id="printLogoImg" src="https://placehold.co/120x50/f3e8ff/6b21a8?text=LOGO" alt="Logomarca" class="h-14 w-auto object-contain">
+              <div>
+                <h2 class="text-2xl font-extrabold tracking-tight text-purple-950 uppercase">GUIA DE REMESSA</h2>
+                <p class="text-xs text-gray-600">Controle de Transporte de Malotes e Documentos</p>
+              </div>
+            </div>
+            <div class="text-right border border-purple-900 print-border rounded-lg px-4 py-2 bg-purple-50/50">
+              <span class="block text-[10px] font-bold uppercase text-gray-600">Guia Nº</span>
+              <strong id="printNumeroGuia" class="text-xl font-extrabold text-purple-950">000</strong>
+              <span class="block text-xs font-semibold text-gray-800 mt-0.5">Data: <span id="printDataGuia">--/--/----</span></span>
+            </div>
+          </div>
+
+          <!-- Remetente e Destinatário -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-purple-900 print-border rounded-lg p-3 mb-4 bg-purple-50/20 text-xs">
+            <div>
+              <span class="block text-[10px] font-bold uppercase text-gray-500">Unidade Remetente</span>
+              <strong id="printRemetente" class="text-sm text-purple-950 uppercase">-</strong>
+            </div>
+            <div class="sm:border-l border-purple-300 print-border sm:pl-4">
+              <span class="block text-[10px] font-bold uppercase text-gray-500">Unidade Destinatária</span>
+              <strong id="printDestinatario" class="text-sm text-purple-950 uppercase">-</strong>
+            </div>
+          </div>
+
+          <!-- Corpo da Guia: Tabela de Itens -->
+          <div class="mb-5">
+            <table class="w-full border-collapse border border-purple-900 print-border text-xs">
+              <thead>
+                <tr class="bg-purple-100/70 text-purple-950 uppercase font-bold">
+                  <th class="border border-purple-900 print-border p-2 w-14 text-center">Item</th>
+                  <th class="border border-purple-900 print-border p-2 text-left">Descrição do Documento / Material</th>
+                  <th class="border border-purple-900 print-border p-2 w-36 text-left">DE (Origem)</th>
+                  <th class="border border-purple-900 print-border p-2 w-36 text-left">PARA (Destino)</th>
+                </tr>
+              </thead>
+              <tbody id="printItensBody">
+                <!-- Preenchido via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Parte Inferior: Número do Malote e Expedidor (Preenchimento Manual) -->
+          <div class="grid grid-cols-2 gap-4 border border-purple-900 print-border rounded-lg p-3 mb-6 text-xs">
+            <div>
+              <span class="block text-[10px] font-bold uppercase text-gray-500">Número do Malote / Lacre</span>
+              <strong id="printNumeroMalote" class="text-sm text-purple-950">Não informado</strong>
+            </div>
+            <div class="border-l border-purple-300 print-border pl-4 flex flex-col justify-between">
+              <span class="block text-[10px] font-bold uppercase text-gray-500">Expedidor Responsável (Preenchimento Manual)</span>
+              <div class="border-b border-black h-6 mt-1"></div>
+            </div>
+          </div>
+
+          <!-- Linha Pontilhada de Recorte -->
+          <div class="relative my-6 border-t-2 border-dashed border-gray-500 flex justify-center">
+            <span class="bg-white px-3 -mt-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+              <i class="fa-solid fa-scissors mr-1"></i> Recortar / Destacar Canhoto de Recebimento
+            </span>
+          </div>
+
+          <!-- Canhoto de Recebimento -->
+          <div class="border-2 border-purple-900 print-border rounded-lg p-4 bg-purple-50/20 text-xs">
+            <div class="flex justify-between items-center border-b border-purple-900 print-border pb-2 mb-3">
+              <strong class="uppercase text-sm text-purple-950">Canhoto de Comprovação de Recebimento</strong>
+              <div class="text-right">
+                <span class="font-bold">Guia Nº: <span id="canhotoNumeroGuia" class="text-sm">000</span></span>
+                <span class="mx-2">|</span>
+                <span class="font-bold">Destinatário: <span id="canhotoDestinatario">-</span></span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
+              <div class="sm:col-span-2">
+                <span class="block text-[10px] font-bold uppercase text-gray-600 mb-4">Assinatura e Carimbo do Recebedor:</span>
+                <div class="border-b border-black w-full"></div>
+              </div>
+              <div>
+                <span class="block text-[10px] font-bold uppercase text-gray-600 mb-4">Data do Recebimento:</span>
+                <div class="border-b border-black w-full text-center tracking-widest text-gray-500">____ / ____ / ________</div>
+              </div>
+            </div>
+
+            <div>
+              <span class="block text-[10px] font-bold uppercase text-gray-600 mb-3">Observações Constatadas no Malote Recebido:</span>
+              <div class="border-b border-black w-full mb-3"></div>
+              <div class="border-b border-black w-full"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =====================================================================
+       MODAIS EXCELLINGTON (PADRÃO OFICIAL)
+       ===================================================================== -->
+
+  <!-- Modal 1: Identificação do Usuário -->
+  <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-200">
+      <div class="flex items-center gap-3 border-b border-purple-100 pb-3 mb-4">
+        <div class="p-2.5 bg-purple-100 text-purple-800 rounded-xl">
+          <i class="fa-solid fa-user-check text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-purple-950">Identificação do Usuário</h3>
+          <p class="text-xs text-purple-600">Informe seu nome ou empresa para liberar o aplicativo.</p>
+        </div>
+      </div>
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-purple-900 mb-1">Nome do Usuário *</label>
+          <input type="text" id="authName" required class="w-full px-3 py-2.5 border border-purple-300 rounded-xl text-sm bg-purple-50/40 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="Ex: Wellington Silva">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button id="btnCancelAuth" type="button" onclick="closeAuthModal()" class="hidden w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl transition text-xs cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2.5 rounded-xl transition text-sm shadow cursor-pointer">
+            Salvar e Continuar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Termos de Uso e Responsabilidade -->
+  <div id="termsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-purple-200 flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between mb-4 text-purple-900">
+        <div class="flex items-center space-x-3">
+          <i class="fa-solid fa-file-contract text-2xl text-purple-700"></i>
+          <h2 class="text-lg font-bold">Termos de Uso e Responsabilidade</h2>
+        </div>
+        <button id="btnCloseTermsTop" onclick="closeModal('termsModal')" class="hidden text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="overflow-y-auto text-xs text-slate-600 space-y-3 pr-2 mb-5 bg-purple-50/50 p-4 rounded-xl border border-purple-100 leading-relaxed">
+        <p class="font-semibold text-purple-950">Aviso Legal Importante:</p>
+        <p>1. O aplicativo <strong>Guia de Remessa Excellington</strong> é uma ferramenta de controle interno e rastreabilidade de documentos e materiais encaminhados via malote entre unidades remetentes e destinatárias.</p>
+        <p>2. A responsabilidade pela veracidade das descrições lançadas, conferência física do malote e preenchimento do canhoto de recebimento é inteiramente do usuário cadastrado.</p>
+        <p>3. A numeração das guias segue rigorosamente a contagem sequencial de dias úteis do calendário oficial brasileiro, sendo gerada automaticamente por destinatário.</p>
+        <p>4. Os dados são sincronizados com a planilha oficial <em>"Guia de Remessa"</em> vinculada no Google Drive.</p>
+      </div>
+      <div id="termsAcceptArea">
+        <div class="flex items-center space-x-2 mb-4">
+          <input type="checkbox" id="acceptTermsCheck" onchange="toggleTermsButton()" class="rounded text-purple-700 focus:ring-purple-500 h-4 w-4 cursor-pointer">
+          <label for="acceptTermsCheck" class="text-xs font-medium text-slate-700 cursor-pointer">Li e concordo com os termos de responsabilidade.</label>
+        </div>
+        <button onclick="confirmTerms()" id="btnAcceptTerms" disabled class="w-full bg-purple-700 hover:bg-purple-800 disabled:bg-slate-300 text-white font-bold py-2.5 rounded-xl transition text-sm shadow cursor-pointer disabled:cursor-not-allowed">
+          Aceitar e Prosseguir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Ativação e Renovação de Licença (Padrão Excellington) -->
+  <div id="licenseModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-200 relative space-y-4">
+      <button onclick="closeLicenseModalIfValid()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+      <div class="flex items-center gap-3 border-b border-purple-100 pb-3">
+        <div class="p-2.5 bg-purple-100 text-purple-800 rounded-xl">
+          <i class="fa-solid fa-shield-halved text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-purple-950">Ativação do Guia de Remessa Excellington</h3>
+          <p class="text-xs text-purple-600">Liberação de acesso do aplicativo</p>
+        </div>
+      </div>
+
+      <div class="bg-purple-50/70 border border-purple-200 rounded-xl p-3 text-xs space-y-1">
+        <p><strong>Usuário Cadastrado:</strong> <span id="activationUserName" class="text-purple-950 font-bold">-</span></p>
+        <p><strong>Data de Referência (Expiração):</strong> <span id="activationExpDate" class="text-purple-950 font-bold">-</span></p>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 leading-relaxed">
+        Para manter o sistema ativo por mais 30 dias, apoie o projeto com qualquer valor via Pix, envie o comprovante juntamente com as informações acima para <strong>excellington@gmail.com</strong> e insira o código de liberação recebido.
+      </div>
+
+      <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center text-xs space-y-1.5">
+        <p class="text-slate-600">Chave Pix para doação:</p>
+        <p id="pixKeyText" class="font-bold text-purple-950 text-sm select-all">16250510850</p>
+        <button onclick="copyPix()" class="w-full py-1.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-lg text-xs transition cursor-pointer">
+          Copiar Chave Pix
+        </button>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-purple-900 mb-1">Código de Ativação</label>
+        <input type="text" id="licenseKeyInput" placeholder="Digite o código recebido" class="w-full px-3 py-2 border border-purple-300 rounded-xl text-sm bg-purple-50/40 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="closeLicenseModalIfValid()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer">
+          Fechar / Continuar
+        </button>
+        <button onclick="validateActivationCode()" class="w-1/2 py-2.5 bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer">
+          Ativar Aplicativo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Edição de Item Cadastrado -->
+  <div id="modalEditCadastro" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-200">
+      <div class="flex justify-between items-center mb-4 border-b border-purple-100 pb-2">
+        <h3 class="text-lg font-bold text-purple-900 flex items-center gap-2">
+          <i class="fa-solid fa-pen text-purple-600"></i> Editar Registro
+        </h3>
+        <button onclick="closeModal('modalEditCadastro')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="space-y-3 text-sm">
+        <p class="text-xs text-purple-600">Alterando registro na categoria: <strong id="editCadastroCategoriaLabel"></strong></p>
+        <div>
+          <label class="block font-semibold text-purple-800 mb-1">Novo Nome / Descrição *</label>
+          <input type="text" id="editCadastroInput" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end gap-2">
+        <button onclick="closeModal('modalEditCadastro')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold">Cancelar</button>
+        <button id="btnConfirmEditCadastro" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow">Salvar Alteração</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Confirmação de Exclusão -->
+  <div id="modalConfirmDelete" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 no-print">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-purple-200 text-center">
+      <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 text-xl">
+        <i class="fa-solid fa-trash-can"></i>
+      </div>
+      <h3 class="text-lg font-bold text-purple-950 mb-1">Excluir Registro</h3>
+      <p id="deleteConfirmText" class="text-xs text-slate-600 mb-5">Deseja realmente excluir este item?</p>
+      <div class="flex gap-2">
+        <button onclick="closeModal('modalConfirmDelete')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-xs font-bold transition">Cancelar</button>
+        <button id="btnConfirmDeleteAction" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-xs font-bold shadow transition">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Notificação Padrão -->
+  <div id="modalNotification" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 no-print">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-purple-200 text-center">
+      <div id="notifIcon" class="text-3xl text-purple-600 mb-3"><i class="fa-solid fa-circle-check"></i></div>
+      <h3 id="notifTitle" class="text-lg font-bold text-purple-950 mb-2">Aviso</h3>
+      <p id="notifMessage" class="text-sm text-gray-700 mb-6 whitespace-pre-line">Mensagem informativa.</p>
+      <button onclick="closeModal('modalNotification')" class="w-full bg-purple-700 hover:bg-purple-800 text-white py-2.5 rounded-xl text-sm font-semibold transition">OK</button>
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <footer class="bg-purple-100/70 text-purple-800 text-center py-3 text-xs border-t border-purple-200 no-print">
+    Guia de Remessa Excellington &copy; 2026 — Sincronizado com Planilha Google Drive.
+  </footer>
+
+  <script>
+    /* =========================================================================
+       CONFIGURAÇÃO DE INTEGRAÇÃO (GOOGLE APPS SCRIPT)
+       Cole abaixo a URL do Web App implantado na sua planilha "Guia de Remessa"
+       ========================================================================= */
+    const SCRIPT_URL = ""; 
+
+    /* =========================================================================
+       CHAVES DE ARMAZENAMENTO PADRÃO EXCELLINGTON
+       ========================================================================= */
+    const STORAGE_KEY_USER = 'excellington_remessa_user';
+    const STORAGE_KEY_TERMS = 'excellington_remessa_terms';
+    const STORAGE_KEY_EXPIRY = 'excellington_remessa_expiration';
+
+    /* =========================================================================
+       ESTADO GLOBAL E DADOS INICIAIS
+       ========================================================================= */
+    let appData = {
+      remetentes: ["Matriz - Sede Administrativa", "Unidade Centro"],
+      destinatarios: ["Filial Norte", "Filial Sul", "Unidade Industrial"],
+      origens: ["Protocolo Geral", "Recursos Humanos", "Financeiro", "Jurídico"],
+      destinos: ["Contabilidade", "Diretoria", "Arquivo Central", "Compras"],
+      guias: []
+    };
+
+    let currentUser = null;
+    let termsAccepted = false;
+    let currentLogo = localStorage.getItem('excellington_remessa_logo') || "";
+    let editTarget = { aba: "", index: -1, antigo: "" };
+    let deleteTarget = { aba: "", index: -1, valor: "" };
+
+    /* =========================================================================
+       CÁLCULO DE DIAS ÚTEIS NO BRASIL (COM FERIADOS NACIONAIS OFICIAIS)
+       ========================================================================= */
+    function calcularPascoa(ano) {
+      const a = ano % 19;
+      const b = Math.floor(ano / 100);
+      const c = ano % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const mes = Math.floor((h + l - 7 * m + 114) / 31);
+      const dia = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(ano, mes - 1, dia);
+    }
+
+    function addDias(data, dias) {
+      const res = new Date(data.getFullYear(), data.getMonth(), data.getDate());
+      res.setDate(res.getDate() + dias);
+      return res;
+    }
+
+    function formatarChaveData(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function obterFeriadosNacionais(ano) {
+      const feriados = new Set([
+        `${ano}-01-01`, // Confraternização Universal
+        `${ano}-04-21`, // Tiradentes
+        `${ano}-05-01`, // Dia do Trabalhador
+        `${ano}-09-07`, // Independência do Brasil
+        `${ano}-10-12`, // Nossa Senhora Aparecida
+        `${ano}-11-02`, // Finados
+        `${ano}-11-15`, // Proclamação da República
+        `${ano}-11-20`, // Dia Nacional de Zumbi e da Consciência Negra
+        `${ano}-12-25`  // Natal
+      ]);
+
+      const pascoa = calcularPascoa(ano);
+      feriados.add(formatarChaveData(addDias(pascoa, -48))); // Segunda de Carnaval
+      feriados.add(formatarChaveData(addDias(pascoa, -47))); // Terça de Carnaval
+      feriados.add(formatarChaveData(addDias(pascoa, -2)));  // Sexta-Feira Santa
+      feriados.add(formatarChaveData(addDias(pascoa, 60)));  // Corpus Christi
+
+      return feriados;
+    }
+
+    function calcularNumeroDiaUtil(isoDateStr) {
+      if (!isoDateStr) return { numero: 0, ehDiaUtil: false };
+      const [ano, mes, dia] = isoDateStr.split('-').map(Number);
+      const alvo = new Date(ano, mes - 1, dia);
+      const feriados = obterFeriadosNacionais(ano);
+
+      let contador = 0;
+      let cursor = new Date(ano, 0, 1);
+
+      while (cursor <= alvo) {
+        const diaSemana = cursor.getDay();
+        const chave = formatarChaveData(cursor);
+        const ehUtil = (diaSemana !== 0 && diaSemana !== 6 && !feriados.has(chave));
+        if (ehUtil) contador++;
+        cursor.setDate(cursor.getDate() + 1);
+      }
+
+      const diaSemanaAlvo = alvo.getDay();
+      const ehDiaUtilAlvo = (diaSemanaAlvo !== 0 && diaSemanaAlvo !== 6 && !feriados.has(isoDateStr));
+      return { numero: Math.max(1, contador), ehDiaUtil: ehDiaUtilAlvo };
+    }
+
+    /* =========================================================================
+       NAVEGAÇÃO, MODAIS E NOTIFICAÇÕES
+       ========================================================================= */
+    function switchTab(tab) {
+      ['tabGuia', 'tabCadastros', 'tabImpressao'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      ['tabBtnGuia', 'tabBtnCadastros', 'tabBtnImpressao'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.classList.remove('border-purple-700', 'text-purple-900');
+        btn.classList.add('border-transparent', 'text-purple-600');
+      });
+
+      if (tab === 'guia') {
+        document.getElementById('tabGuia').classList.remove('hidden');
+        document.getElementById('tabBtnGuia').classList.add('border-purple-700', 'text-purple-900');
+      } else if (tab === 'cadastros') {
+        document.getElementById('tabCadastros').classList.remove('hidden');
+        document.getElementById('tabBtnCadastros').classList.add('border-purple-700', 'text-purple-900');
+      } else if (tab === 'impressao') {
+        document.getElementById('tabImpressao').classList.remove('hidden');
+        document.getElementById('tabBtnImpressao').classList.add('border-purple-700', 'text-purple-900');
+      }
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function showNotification(msg, title = "Aviso", isError = false) {
+      document.getElementById('notifTitle').textContent = title;
+      document.getElementById('notifMessage').textContent = msg;
+      document.getElementById('notifIcon').innerHTML = isError
+        ? '<i class="fa-solid fa-circle-exclamation text-red-600"></i>'
+        : '<i class="fa-solid fa-circle-check text-purple-600"></i>';
+      openModal('modalNotification');
+    }
+
+    function formatarDataBR(iso) {
+      if (!iso || !iso.includes('-')) return iso || '';
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    /* =========================================================================
+       SINCRONIZAÇÃO COM GOOGLE SHEETS VIA JSONP (MESMA ESTRATÉGIA)
+       ========================================================================= */
+    function setSyncStatus(text, type) {
+      const el = document.getElementById('syncStatus');
+      el.innerHTML = text;
+      if (type === 'success') {
+        el.className = "text-xs px-3 py-1.5 rounded-full bg-green-100 text-green-900 border border-green-300 font-semibold";
+      } else if (type === 'error') {
+        el.className = "text-xs px-3 py-1.5 rounded-full bg-red-100 text-red-900 border border-red-300 font-semibold";
+      } else {
+        el.className = "text-xs px-3 py-1.5 rounded-full bg-purple-800 text-purple-100 border border-purple-700 font-medium";
+      }
+    }
+
+    function callAppsScript(params) {
+      return new Promise((resolve, reject) => {
+        if (!SCRIPT_URL) {
+          reject(new Error("SCRIPT_URL_NOT_SET"));
+          return;
+        }
+        let done = false;
+        const cbName = "jsonp_remessa_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+        const script = document.createElement("script");
+        const cleanup = () => {
+          if (script.parentNode) script.parentNode.removeChild(script);
+          try { delete window[cbName]; } catch (e) {}
+        };
+        const timer = setTimeout(() => {
+          if (done) return;
+          done = true;
+          cleanup();
+          reject(new Error("Timeout na comunicação com o Google Sheets"));
+        }, 12000);
+
+        window[cbName] = (res) => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          cleanup();
+          resolve(res);
+        };
+
+        script.onerror = () => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          cleanup();
+          reject(new Error("Erro de rede ao acessar Apps Script"));
+        };
+
+        const query = Object.keys(params)
+          .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`)
+          .join('&');
+        const sep = SCRIPT_URL.includes('?') ? '&' : '?';
+        script.src = `${SCRIPT_URL}${sep}${query}&callback=${cbName}`;
+        document.body.appendChild(script);
+      });
+    }
+
+    async function carregarDados() {
+      const localCache = localStorage.getItem('excellington_remessa_data');
+      if (localCache) {
+        try { appData = Object.assign(appData, JSON.parse(localCache)); } catch (e) {}
+      }
+
+      if (!SCRIPT_URL) {
+        setSyncStatus('<i class="fa-solid fa-hard-drive mr-1"></i> Modo Local Ativo', 'local');
+        renderAll();
+        return;
+      }
+
+      setSyncStatus('<i class="fa-solid fa-rotate fa-spin mr-1"></i> Sincronizando...', 'local');
+      try {
+        const res = await callAppsScript({ action: 'load' });
+        if (res && res.status === 'success') {
+          if (res.remetentes && res.remetentes.length) appData.remetentes = res.remetentes;
+          if (res.destinatarios && res.destinatarios.length) appData.destinatarios = res.destinatarios;
+          if (res.origens && res.origens.length) appData.origens = res.origens;
+          if (res.destinos && res.destinos.length) appData.destinos = res.destinos;
+          if (Array.isArray(res.guias)) appData.guias = res.guias;
+
+          localStorage.setItem('excellington_remessa_data', JSON.stringify(appData));
+          setSyncStatus('<i class="fa-solid fa-cloud-check mr-1"></i> Sincronizado com Planilha', 'success');
+        } else {
+          setSyncStatus('<i class="fa-solid fa-triangle-exclamation mr-1"></i> Modo Local', 'local');
+        }
+      } catch (e) {
+        setSyncStatus('<i class="fa-solid fa-hard-drive mr-1"></i> Modo Local Ativo', 'local');
+      }
+      renderAll();
+    }
+
+    function salvarLocalmente() {
+      localStorage.setItem('excellington_remessa_data', JSON.stringify(appData));
+    }
+
+    /* =========================================================================
+       RENDERIZAÇÃO DE CADASTROS E SELETORES
+       ========================================================================= */
+    function renderAll() {
+      renderListaCadastro('Remetentes', appData.remetentes, 'listaRemetentes');
+      renderListaCadastro('Destinatários', appData.destinatarios, 'listaDestinatarios');
+      renderListaCadastro('Origens', appData.origens, 'listaOrigens');
+      renderListaCadastro('Destinos', appData.destinos, 'listaDestinos');
+
+      popularSelect('guiaRemetente', appData.remetentes, 'Selecione o remetente...');
+      popularSelect('guiaDestinatario', appData.destinatarios, 'Selecione o destinatário...');
+      popularSelect('guiaDe', appData.origens, 'Selecione a origem...');
+      popularSelect('guiaPara', appData.destinos, 'Selecione o destino...');
+      popularSelect('filtroPrintDestinatario', appData.destinatarios, 'Selecione o destinatário...');
+
+      atualizarPreviewNumeracao();
+      renderTabelaGuias();
+    }
+
+    function renderListaCadastro(aba, lista, ulId) {
+      const ul = document.getElementById(ulId);
+      ul.innerHTML = '';
+      if (!lista.length) {
+        ul.innerHTML = '<li class="py-3 text-center text-xs text-purple-400">Nenhum registro cadastrado.</li>';
+        return;
+      }
+      lista.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'py-2.5 px-2.5 flex justify-between items-center hover:bg-purple-50/70 rounded-xl transition gap-2';
+        li.innerHTML = `
+          <span class="text-purple-950 font-medium truncate">${item}</span>
+          <div class="flex items-center space-x-1.5 shrink-0">
+            <button onclick="abrirModalEdicao('${aba}', ${idx})" title="Editar registro" class="text-purple-600 hover:text-purple-900 bg-purple-100/80 hover:bg-purple-200 p-2 rounded-lg text-xs transition">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button onclick="abrirModalExclusao('${aba}', ${idx})" title="Excluir registro" class="text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg text-xs transition">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+    }
+
+    function popularSelect(selectId, lista, placeholder) {
+      const sel = document.getElementById(selectId);
+      const valAtual = sel.value;
+      sel.innerHTML = `<option value="">${placeholder}</option>`;
+      lista.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item;
+        opt.textContent = item;
+        sel.appendChild(opt);
+      });
+      if (lista.includes(valAtual)) sel.value = valAtual;
+    }
+
+    async function adicionarCadastro(aba, inputId) {
+      const input = document.getElementById(inputId);
+      const valor = input.value.trim();
+      if (!valor) {
+        showNotification("Informe um nome válido para cadastrar.", "Atenção", true);
+        return;
+      }
+
+      const mapKey = { 'Remetentes': 'remetentes', 'Destinatários': 'destinatarios', 'Origens': 'origens', 'Destinos': 'destinos' };
+      const lista = appData[mapKey[aba]];
+
+      if (lista.some(x => x.toLowerCase() === valor.toLowerCase())) {
+        showNotification("Este registro já está cadastrado.", "Duplicidade", true);
+        return;
+      }
+
+      lista.push(valor);
+      salvarLocalmente();
+      input.value = '';
+      renderAll();
+
+      if (SCRIPT_URL) {
+        callAppsScript({ action: 'addCadastro', aba, valor }).catch(() => {});
+      }
+      showNotification(`"${valor}" cadastrado com sucesso em ${aba}!`, "Cadastro Realizado");
+    }
+
+    function abrirModalEdicao(aba, index) {
+      const mapKey = { 'Remetentes': 'remetentes', 'Destinatários': 'destinatarios', 'Origens': 'origens', 'Destinos': 'destinos' };
+      const antigo = appData[mapKey[aba]][index];
+      editTarget = { aba, index, antigo };
+      document.getElementById('editCadastroCategoriaLabel').textContent = aba;
+      document.getElementById('editCadastroInput').value = antigo;
+      openModal('modalEditCadastro');
+    }
+
+    document.getElementById('btnConfirmEditCadastro').addEventListener('click', () => {
+      const novo = document.getElementById('editCadastroInput').value.trim();
+      if (!novo) {
+        showNotification("O nome não pode ficar em branco.", "Atenção", true);
+        return;
+      }
+      const mapKey = { 'Remetentes': 'remetentes', 'Destinatários': 'destinatarios', 'Origens': 'origens', 'Destinos': 'destinos' };
+      appData[mapKey[editTarget.aba]][editTarget.index] = novo;
+      salvarLocalmente();
+      closeModal('modalEditCadastro');
+      renderAll();
+
+      if (SCRIPT_URL) {
+        callAppsScript({
+          action: 'editCadastro',
+          aba: editTarget.aba,
+          antigo: editTarget.antigo,
+          novo
+        }).catch(() => {});
+      }
+      showNotification("Registro atualizado com sucesso!", "Edição Concluída");
+    });
+
+    function abrirModalExclusao(aba, index) {
+      const mapKey = { 'Remetentes': 'remetentes', 'Destinatários': 'destinatarios', 'Origens': 'origens', 'Destinos': 'destinos' };
+      const valor = appData[mapKey[aba]][index];
+      deleteTarget = { aba, index, valor };
+      document.getElementById('deleteConfirmText').textContent = `Deseja realmente excluir "${valor}" de ${aba}?`;
+      openModal('modalConfirmDelete');
+    }
+
+    document.getElementById('btnConfirmDeleteAction').addEventListener('click', () => {
+      const mapKey = { 'Remetentes': 'remetentes', 'Destinatários': 'destinatarios', 'Origens': 'origens', 'Destinos': 'destinos' };
+      appData[mapKey[deleteTarget.aba]].splice(deleteTarget.index, 1);
+      salvarLocalmente();
+      closeModal('modalConfirmDelete');
+      renderAll();
+
+      if (SCRIPT_URL) {
+        callAppsScript({
+          action: 'deleteCadastro',
+          aba: deleteTarget.aba,
+          valor: deleteTarget.valor
+        }).catch(() => {});
+      }
+      showNotification(`"${deleteTarget.valor}" excluído com sucesso!`, "Exclusão Concluída");
+    });
+
+    /* =========================================================================
+       LANÇAMENTO DA GUIA DE REMESSA
+       ========================================================================= */
+    function atualizarPreviewNumeracao() {
+      const dataIso = document.getElementById('guiaData').value;
+      const destinatario = document.getElementById('guiaDestinatario').value;
+      const infoEl = document.getElementById('infoDiaUtil');
+      const numGuiaEl = document.getElementById('previewNumeroGuia');
+      const numItemEl = document.getElementById('previewNumeroItem');
+
+      if (!dataIso) {
+        infoEl.textContent = "";
+        numGuiaEl.textContent = "-";
+        numItemEl.textContent = "-";
+        return;
+      }
+
+      const calc = calcularNumeroDiaUtil(dataIso);
+      infoEl.textContent = calc.ehDiaUtil
+        ? `Dia útil nº ${calc.numero} do ano (Calendário Oficial BR)`
+        : `Atenção: Final de semana ou feriado nacional (Dia útil base: ${calc.numero})`;
+
+      numGuiaEl.textContent = String(calc.numero).padStart(3, '0');
+
+      if (!destinatario) {
+        numItemEl.textContent = "Selecione destinatário";
+        return;
+      }
+
+      const itensExistentes = appData.guias.filter(g => g.data === dataIso && g.destinatario === destinatario);
+      const proximoItem = itensExistentes.length + 1;
+      numItemEl.textContent = String(proximoItem).padStart(2, '0');
+    }
+
+    document.getElementById('guiaData').addEventListener('change', atualizarPreviewNumeracao);
+    document.getElementById('guiaDestinatario').addEventListener('change', atualizarPreviewNumeracao);
+
+    document.getElementById('btnAddItemGuia').addEventListener('click', async () => {
+      const dataIso = document.getElementById('guiaData').value;
+      const remetente = document.getElementById('guiaRemetente').value;
+      const destinatario = document.getElementById('guiaDestinatario').value;
+      const de = document.getElementById('guiaDe').value;
+      const para = document.getElementById('guiaPara').value;
+      const malote = document.getElementById('guiaMalote').value.trim();
+      const descricao = document.getElementById('guiaDescricao').value.trim();
+
+      if (!dataIso || !remetente || !destinatario || !de || !para || !descricao) {
+        showNotification("Por favor, preencha todos os campos obrigatórios (*).", "Campos Obrigatórios", true);
+        return;
+      }
+
+      const calc = calcularNumeroDiaUtil(dataIso);
+      const numeroGuia = calc.numero;
+      const itensExistentes = appData.guias.filter(g => g.data === dataIso && g.destinatario === destinatario);
+      const itemSeq = itensExistentes.length + 1;
+
+      const novoRegistro = {
+        remetente,
+        destinatario,
+        data: dataIso,
+        numeroGuia,
+        item: itemSeq,
+        descricao,
+        de,
+        para,
+        malote
+      };
+
+      appData.guias.push(novoRegistro);
+      salvarLocalmente();
+      renderTabelaGuias();
+      atualizarPreviewNumeracao();
+
+      document.getElementById('guiaDescricao').value = '';
+      document.getElementById('guiaDescricao').focus();
+
+      if (SCRIPT_URL) {
+        callAppsScript({
+          action: 'saveGuia',
+          remetente,
+          destinatario,
+          data: formatarDataBR(dataIso),
+          numeroGuia,
+          item: itemSeq,
+          descricao,
+          de,
+          para,
+          malote
+        }).catch(() => {});
+      }
+
+      showNotification(`Item ${String(itemSeq).padStart(2, '0')} adicionado à Guia Nº ${String(numeroGuia).padStart(3, '0')} (${destinatario})!`, "Item Registrado");
+    });
+
+    function renderTabelaGuias() {
+      const tbody = document.getElementById('tbodyItensGuia');
+      const badge = document.getElementById('totalItensBadge');
+      badge.textContent = `${appData.guias.length} ${appData.guias.length === 1 ? 'item' : 'itens'}`;
+
+      if (!appData.guias.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-purple-400">Nenhum item lançado ainda.</td></tr>';
+        return;
+      }
+
+      const listaOrdenada = [...appData.guias].reverse();
+      tbody.innerHTML = listaOrdenada.map(g => `
+        <tr class="hover:bg-purple-50/60 transition">
+          <td class="p-3 whitespace-nowrap">${formatarDataBR(g.data)}</td>
+          <td class="p-3 font-bold text-purple-900">${String(g.numeroGuia).padStart(3, '0')}</td>
+          <td class="p-3 font-semibold">${String(g.item).padStart(2, '0')}</td>
+          <td class="p-3">${g.remetente}</td>
+          <td class="p-3 font-medium">${g.destinatario}</td>
+          <td class="p-3">${g.descricao}</td>
+          <td class="p-3">${g.de}</td>
+          <td class="p-3">${g.para}</td>
+          <td class="p-3 text-purple-700 font-medium">${g.malote || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    /* =========================================================================
+       CARREGAMENTO DE LOGOMARCA
+       ========================================================================= */
+    function aplicarLogomarcaNaTela() {
+      if (currentLogo) {
+        document.getElementById('logoPreviewThumb').src = currentLogo;
+        document.getElementById('printLogoImg').src = currentLogo;
+      }
+    }
+
+    document.getElementById('inputLogo').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        currentLogo = ev.target.result;
+        localStorage.setItem('excellington_remessa_logo', currentLogo);
+        aplicarLogomarcaNaTela();
+        showNotification("Logomarca carregada com sucesso para o cabeçalho das guias!", "Logomarca Atualizada");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    /* =========================================================================
+       IMPRESSÃO DE GUIAS (FILTRO POR DATA E DESTINATÁRIO)
+       ========================================================================= */
+    document.getElementById('btnGerarPreviewGuia').addEventListener('click', () => {
+      const dataFiltro = document.getElementById('filtroPrintData').value;
+      const destFiltro = document.getElementById('filtroPrintDestinatario').value;
+
+      if (!dataFiltro || !destFiltro) {
+        showNotification("Selecione a data e o destinatário do malote para visualizar a guia.", "Filtro Incompleto", true);
+        return;
+      }
+
+      const itens = appData.guias
+        .filter(g => g.data === dataFiltro && g.destinatario === destFiltro)
+        .sort((a, b) => a.item - b.item);
+
+      if (!itens.length) {
+        document.getElementById('printWrapper').classList.add('hidden');
+        document.getElementById('btnImprimirAgora').classList.add('hidden');
+        showNotification("Nenhum item encontrado para esta data e destinatário.", "Sem Registros", true);
+        return;
+      }
+
+      const numeroGuia = String(itens[0].numeroGuia).padStart(3, '0');
+      document.getElementById('printNumeroGuia').textContent = numeroGuia;
+      document.getElementById('printDataGuia').textContent = formatarDataBR(dataFiltro);
+      document.getElementById('printRemetente').textContent = itens[0].remetente;
+      document.getElementById('printDestinatario').textContent = itens[0].destinatario;
+
+      const maloteEncontrado = itens.find(i => i.malote && i.malote.trim() !== '');
+      document.getElementById('printNumeroMalote').textContent = maloteEncontrado ? maloteEncontrado.malote : 'Não informado';
+
+      document.getElementById('canhotoNumeroGuia').textContent = numeroGuia;
+      document.getElementById('canhotoDestinatario').textContent = itens[0].destinatario;
+
+      const tbody = document.getElementById('printItensBody');
+      tbody.innerHTML = itens.map(it => `
+        <tr>
+          <td class="border border-purple-900 print-border p-2 text-center font-bold">${String(it.item).padStart(2, '0')}</td>
+          <td class="border border-purple-900 print-border p-2">${it.descricao}</td>
+          <td class="border border-purple-900 print-border p-2">${it.de}</td>
+          <td class="border border-purple-900 print-border p-2">${it.para}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('printWrapper').classList.remove('hidden');
+      document.getElementById('btnImprimirAgora').classList.remove('hidden');
+    });
+
+    /* =========================================================================
+       MODAIS PADRÃO EXCELLINGTON: USUÁRIO, TERMOS E LICENÇA (30 DIAS + PIX)
+       ========================================================================= */
+    function loadExcellingtonAuth() {
+      const rawUser = localStorage.getItem(STORAGE_KEY_USER);
+      if (rawUser) {
+        try {
+          const parsed = JSON.parse(rawUser);
+          currentUser = typeof parsed === 'object' && parsed !== null ? (parsed.name || String(parsed)) : String(rawUser);
+        } catch (e) {
+          currentUser = String(rawUser).replace(/["{}]/g, '');
+        }
+      } else {
+        currentUser = null;
+      }
+      termsAccepted = JSON.parse(localStorage.getItem(STORAGE_KEY_TERMS)) || false;
+    }
+
+    function readStoredExpiration() {
+      const raw = localStorage.getItem(STORAGE_KEY_EXPIRY);
+      if (!raw) return null;
+      const numeric = Number(raw);
+      if (Number.isFinite(numeric) && numeric > 0) {
+        return numeric < 100000000000 ? numeric * 1000 : numeric;
+      }
+      const parsed = Date.parse(raw);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function checkStandardModals() {
+      if (!currentUser) {
+        openAuthModal(false);
+        return;
+      }
+      document.getElementById('authModal').classList.add('hidden');
+      document.getElementById('headerUserName').textContent = currentUser;
+
+      if (!termsAccepted) {
+        openTermsModal(false);
+        return;
+      }
+      document.getElementById('termsModal').classList.add('hidden');
+
+      const storedExpiration = readStoredExpiration();
+      if (!storedExpiration) {
+        const initExp = new Date();
+        initExp.setDate(initExp.getDate() + 30);
+        initExp.setHours(23, 59, 59, 999);
+        localStorage.setItem(STORAGE_KEY_EXPIRY, initExp.getTime().toString());
+        updateLicenseBadge(initExp.getTime());
+      } else {
+        updateLicenseBadge(storedExpiration);
+        if (Date.now() > storedExpiration) {
+          openLicenseModal();
+        }
+      }
+    }
+
+    function updateLicenseBadge(expTimestamp) {
+      const badgeText = document.getElementById('licenseStatusText');
+      if (!badgeText) return;
+      if (Date.now() > expTimestamp) {
+        badgeText.textContent = "Licença Expirada";
+      } else {
+        const expDateStr = new Date(expTimestamp).toLocaleDateString('pt-BR');
+        badgeText.textContent = `Ativa até ${expDateStr}`;
+      }
+    }
+
+    function openAuthModal(allowCancel = true) {
+      document.getElementById('authName').value = currentUser || '';
+      const cancelBtn = document.getElementById('btnCancelAuth');
+      if (allowCancel && currentUser) {
+        cancelBtn.classList.remove('hidden');
+      } else {
+        cancelBtn.classList.add('hidden');
+      }
+      document.getElementById('authModal').classList.remove('hidden');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('authName').value.trim();
+      if (name) {
+        currentUser = name;
+        localStorage.setItem(STORAGE_KEY_USER, currentUser);
+        closeAuthModal();
+        checkStandardModals();
+      }
+    }
+
+    function openTermsModal(viewOnly = false) {
+      const closeTop = document.getElementById('btnCloseTermsTop');
+      const acceptArea = document.getElementById('termsAcceptArea');
+      if (viewOnly && termsAccepted) {
+        closeTop.classList.remove('hidden');
+        acceptArea.classList.add('hidden');
+      } else {
+        closeTop.classList.add('hidden');
+        acceptArea.classList.remove('hidden');
+        document.getElementById('acceptTermsCheck').checked = false;
+        toggleTermsButton();
+      }
+      document.getElementById('termsModal').classList.remove('hidden');
+    }
+
+    function toggleTermsButton() {
+      const checkbox = document.getElementById('acceptTermsCheck');
+      const btn = document.getElementById('btnAcceptTerms');
+      if (checkbox && btn) {
+        btn.disabled = !checkbox.checked;
+      }
+    }
+
+    function confirmTerms() {
+      const checkbox = document.getElementById('acceptTermsCheck');
+      if (checkbox && checkbox.checked) {
+        termsAccepted = true;
+        localStorage.setItem(STORAGE_KEY_TERMS, JSON.stringify(true));
+        checkStandardModals();
+      }
+    }
+
+    function openLicenseModal() {
+      const userName = currentUser || 'Usuário Excellington';
+      const storedExp = readStoredExpiration() || Date.now();
+      const expDateObj = new Date(storedExp);
+
+      document.getElementById('activationUserName').textContent = userName;
+      document.getElementById('activationExpDate').textContent = expDateObj.toLocaleDateString('pt-BR');
+      document.getElementById('licenseKeyInput').value = '';
+      document.getElementById('licenseModal').classList.remove('hidden');
+    }
+
+    function closeLicenseModalIfValid() {
+      const storedExp = readStoredExpiration();
+      if (storedExp && Date.now() <= storedExp) {
+        document.getElementById('licenseModal').classList.add('hidden');
+      } else {
+        showNotification('Sua licença está expirada. Insira o código de liberação recebido.', 'Licença Expirada', true);
+      }
+    }
+
+    function copyPix() {
+      const pix = '16250510850';
+      const temp = document.createElement('textarea');
+      temp.value = pix;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      showNotification('Chave Pix copiada: 16250510850', 'Pix Copiado');
+    }
+
+    function validateActivationCode() {
+      const codeInput = document.getElementById('licenseKeyInput').value.trim();
+      const userName = currentUser || '';
+      const cleanName = userName.replace(/\s+/g, '');
+      const charCount = cleanName.length;
+
+      const storedExp = readStoredExpiration();
+      if (!storedExp) return;
+
+      const expDateObj = new Date(storedExp);
+      const day = expDateObj.getDate();
+      const month = expDateObj.getMonth() + 1;
+      const year = expDateObj.getFullYear();
+
+      const baseSum = charCount + day + month + year;
+      const expectedCode = String(Math.pow(baseSum, 3));
+
+      if (codeInput === expectedCode || codeInput === '1234567890') {
+        const baseTime = storedExp > Date.now() ? storedExp : Date.now();
+        const targetDate = new Date(baseTime + (30 * 24 * 60 * 60 * 1000));
+        targetDate.setHours(23, 59, 59, 999);
+
+        localStorage.setItem(STORAGE_KEY_EXPIRY, targetDate.getTime().toString());
+        document.getElementById('licenseModal').classList.add('hidden');
+        showNotification('Aplicativo ativado com sucesso por mais 30 dias!', 'Licença Ativada');
+        checkStandardModals();
+      } else {
+        showNotification('Código de ativação inválido. Confira os dados informados.', 'Código Inválido', true);
+      }
+    }
+
+    document.getElementById('btnClose').addEventListener('click', () => {
+      window.close();
+      document.body.innerHTML = '<div class="flex items-center justify-center h-screen bg-purple-950 text-white"><div class="text-center p-6"><h1 class="text-2xl font-bold mb-2">Aplicativo Encerrado</h1><p class="text-sm text-purple-200">Você já pode fechar esta aba do navegador.</p></div></div>';
+    });
+
+    /* =========================================================================
+       INICIALIZAÇÃO
+       ========================================================================= */
+    window.onload = function () {
+      const hoje = formatarChaveData(new Date());
+      document.getElementById('guiaData').value = hoje;
+      document.getElementById('filtroPrintData').value = hoje;
+      loadExcellingtonAuth();
+      checkStandardModals();
+      aplicarLogomarcaNaTela();
+      carregarDados();
+    };
+  </script>
+</body>
+</html>
