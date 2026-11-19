@@ -234,11 +234,12 @@
                 <th class="p-3 border-b border-purple-200">DE</th>
                 <th class="p-3 border-b border-purple-200">PARA</th>
                 <th class="p-3 border-b border-purple-200">Malote</th>
+                <th class="p-3 border-b border-purple-200 text-center">Ações</th>
               </tr>
             </thead>
             <tbody id="tbodyItensGuia" class="divide-y divide-purple-100 text-purple-950">
               <tr>
-                <td colspan="9" class="p-6 text-center text-purple-400">Nenhum item lançado ainda.</td>
+                <td colspan="10" class="p-6 text-center text-purple-400">Nenhum item lançado ainda.</td>
               </tr>
             </tbody>
           </table>
@@ -607,6 +608,52 @@
     </div>
   </div>
 
+  <!-- Modal 5B: Edição de Item Lançado na Guia -->
+  <div id="modalEditItemGuia" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 no-print">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-purple-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 border-b border-purple-100 pb-2">
+        <h3 class="text-lg font-bold text-purple-900 flex items-center gap-2">
+          <i class="fa-solid fa-pen text-purple-600"></i> Editar Item Lançado
+        </h3>
+        <button onclick="closeModal('modalEditItemGuia')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="block font-bold uppercase text-purple-800 mb-1">Data de Envio *</label>
+          <input type="date" id="editGuiaData" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-purple-800 mb-1">Número do Malote</label>
+          <input type="text" id="editGuiaMalote" placeholder="Opcional" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-purple-800 mb-1">Remetente *</label>
+          <select id="editGuiaRemetente" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500"></select>
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-purple-800 mb-1">Destinatário *</label>
+          <select id="editGuiaDestinatario" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500"></select>
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-purple-800 mb-1">Área de Origem (DE) *</label>
+          <select id="editGuiaDe" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500"></select>
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-purple-800 mb-1">Área de Destino (PARA) *</label>
+          <select id="editGuiaPara" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500"></select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block font-bold uppercase text-purple-800 mb-1">Descrição do Documento / Material *</label>
+          <input type="text" id="editGuiaDescricao" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end gap-2">
+        <button onclick="closeModal('modalEditItemGuia')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold">Cancelar</button>
+        <button id="btnConfirmEditItemGuia" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-xl text-xs font-bold shadow">Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal 6: Notificação Padrão -->
   <div id="modalNotification" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50 no-print">
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-purple-200 text-center">
@@ -651,7 +698,8 @@
     let termsAccepted = false;
     let currentLogo = localStorage.getItem('excellington_remessa_logo') || "";
     let editTarget = { aba: "", index: -1, antigo: "" };
-    let deleteTarget = { aba: "", index: -1, valor: "" };
+    let deleteTarget = { type: "cadastro", aba: "", index: -1, valor: "" };
+    let editGuiaIndex = -1;
 
     /* =========================================================================
        CÁLCULO DE DIAS ÚTEIS NO BRASIL (COM FERIADOS NACIONAIS OFICIAIS)
@@ -1042,12 +1090,42 @@
     function abrirModalExclusao(aba, index) {
       const mapKey = { 'Remetentes': 'remetentes', 'Destinatários': 'destinatarios', 'Origens': 'origens', 'Destinos': 'destinos' };
       const valor = appData[mapKey[aba]][index];
-      deleteTarget = { aba, index, valor };
+      deleteTarget = { type: 'cadastro', aba, index, valor };
       document.getElementById('deleteConfirmText').textContent = `Deseja realmente excluir "${valor}" de ${aba}?`;
       openModal('modalConfirmDelete');
     }
 
     document.getElementById('btnConfirmDeleteAction').addEventListener('click', () => {
+      if (deleteTarget.type === 'guia') {
+        const removido = appData.guias[deleteTarget.index];
+        appData.guias.splice(deleteTarget.index, 1);
+
+        // Reordena a numeração sequencial dos itens restantes da mesma data e destinatário
+        let seq = 1;
+        appData.guias.forEach(g => {
+          if (normalizarDataISO(g.data) === normalizarDataISO(removido.data) && g.destinatario === removido.destinatario) {
+            g.item = seq++;
+          }
+        });
+
+        salvarLocalmente();
+        closeModal('modalConfirmDelete');
+        renderAll();
+
+        if (SCRIPT_URL && removido) {
+          callAppsScript({
+            action: 'deleteGuia',
+            data: formatarDataBR(removido.data),
+            numeroGuia: removido.numeroGuia,
+            item: removido.item,
+            destinatario: removido.destinatario,
+            descricao: removido.descricao
+          }).catch(() => {});
+        }
+        showNotification(`Item "${removido.descricao}" excluído da guia com sucesso!`, "Exclusão Concluída");
+        return;
+      }
+
       const mapKey = { 'Remetentes': 'remetentes', 'Destinatários': 'destinatarios', 'Origens': 'origens', 'Destinos': 'destinos' };
       appData[mapKey[deleteTarget.aba]].splice(deleteTarget.index, 1);
       salvarLocalmente();
@@ -1065,8 +1143,112 @@
     });
 
     /* =========================================================================
-       LANÇAMENTO DA GUIA DE REMESSA
+       LANÇAMENTO, EDIÇÃO E EXCLUSÃO DE ITENS DA GUIA DE REMESSA
        ========================================================================= */
+    function abrirModalEdicaoGuia(index) {
+      const item = appData.guias[index];
+      if (!item) return;
+      editGuiaIndex = index;
+
+      popularSelect('editGuiaRemetente', appData.remetentes, 'Selecione o remetente...');
+      popularSelect('editGuiaDestinatario', appData.destinatarios, 'Selecione o destinatário...');
+      popularSelect('editGuiaDe', appData.origens, 'Selecione a origem...');
+      popularSelect('editGuiaPara', appData.destinos, 'Selecione o destino...');
+
+      document.getElementById('editGuiaData').value = normalizarDataISO(item.data);
+      document.getElementById('editGuiaMalote').value = item.malote || '';
+      document.getElementById('editGuiaRemetente').value = item.remetente;
+      document.getElementById('editGuiaDestinatario').value = item.destinatario;
+      document.getElementById('editGuiaDe').value = item.de;
+      document.getElementById('editGuiaPara').value = item.para;
+      document.getElementById('editGuiaDescricao').value = item.descricao;
+
+      openModal('modalEditItemGuia');
+    }
+
+    document.getElementById('btnConfirmEditItemGuia').addEventListener('click', () => {
+      if (editGuiaIndex < 0 || !appData.guias[editGuiaIndex]) return;
+
+      const antigo = { ...appData.guias[editGuiaIndex] };
+      const novaData = normalizarDataISO(document.getElementById('editGuiaData').value);
+      const novoRemetente = document.getElementById('editGuiaRemetente').value;
+      const novoDestinatario = document.getElementById('editGuiaDestinatario').value;
+      const novoDe = document.getElementById('editGuiaDe').value;
+      const novoPara = document.getElementById('editGuiaPara').value;
+      const novoMalote = document.getElementById('editGuiaMalote').value.trim();
+      const novaDescricao = document.getElementById('editGuiaDescricao').value.trim();
+
+      if (!novaData || !novoRemetente || !novoDestinatario || !novoDe || !novoPara || !novaDescricao) {
+        showNotification("Por favor, preencha todos os campos obrigatórios (*).", "Campos Obrigatórios", true);
+        return;
+      }
+
+      const calc = calcularNumeroDiaUtil(novaData);
+      const mudouGuia = (normalizarDataISO(antigo.data) !== novaData || antigo.destinatario !== novoDestinatario);
+
+      appData.guias[editGuiaIndex] = {
+        remetente: novoRemetente,
+        destinatario: novoDestinatario,
+        data: novaData,
+        numeroGuia: calc.numero,
+        item: antigo.item,
+        descricao: novaDescricao,
+        de: novoDe,
+        para: novoPara,
+        malote: novoMalote
+      };
+
+      if (mudouGuia) {
+        let seqAntiga = 1;
+        appData.guias.forEach(g => {
+          if (normalizarDataISO(g.data) === normalizarDataISO(antigo.data) && g.destinatario === antigo.destinatario) {
+            g.item = seqAntiga++;
+          }
+        });
+        let seqNova = 1;
+        appData.guias.forEach(g => {
+          if (normalizarDataISO(g.data) === novaData && g.destinatario === novoDestinatario) {
+            g.item = seqNova++;
+          }
+        });
+      }
+
+      const atualizado = appData.guias[editGuiaIndex];
+      salvarLocalmente();
+      closeModal('modalEditItemGuia');
+      renderAll();
+
+      if (SCRIPT_URL) {
+        callAppsScript({
+          action: 'editGuia',
+          antigaData: formatarDataBR(antigo.data),
+          antigoNumeroGuia: antigo.numeroGuia,
+          antigoItem: antigo.item,
+          antigoDestinatario: antigo.destinatario,
+          antigaDescricao: antigo.descricao,
+          remetente: atualizado.remetente,
+          destinatario: atualizado.destinatario,
+          data: formatarDataBR(atualizado.data),
+          numeroGuia: atualizado.numeroGuia,
+          item: atualizado.item,
+          descricao: atualizado.descricao,
+          de: atualizado.de,
+          para: atualizado.para,
+          malote: atualizado.malote
+        }).catch(() => {});
+      }
+
+      showNotification("Item da guia atualizado com sucesso!", "Edição Concluída");
+    });
+
+    function abrirModalExclusaoGuia(index) {
+      const item = appData.guias[index];
+      if (!item) return;
+      deleteTarget = { type: 'guia', aba: 'GUIA DE REMESSA', index, valor: item.descricao };
+      document.getElementById('deleteConfirmText').textContent = `Deseja realmente excluir o item "${item.descricao}" (Guia Nº ${String(item.numeroGuia).padStart(3, '0')})?`;
+      openModal('modalConfirmDelete');
+    }
+
     function atualizarPreviewNumeracao() {
       const dataIso = normalizarDataISO(document.getElementById('guiaData').value);
       const destinatario = document.getElementById('guiaDestinatario').value;
@@ -1164,12 +1346,15 @@
       badge.textContent = `${appData.guias.length} ${appData.guias.length === 1 ? 'item' : 'itens'}`;
 
       if (!appData.guias.length) {
-        tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-purple-400">Nenhum item lançado ainda.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="p-6 text-center text-purple-400">Nenhum item lançado ainda.</td></tr>';
         return;
       }
 
-      const listaOrdenada = [...appData.guias].reverse();
-      tbody.innerHTML = listaOrdenada.map(g => `
+      const listaComIndices = appData.guias
+        .map((g, originalIndex) => ({ g, originalIndex }))
+        .reverse();
+
+      tbody.innerHTML = listaComIndices.map(({ g, originalIndex }) => `
         <tr class="hover:bg-purple-50/60 transition">
           <td class="p-3 whitespace-nowrap">${formatarDataBR(g.data)}</td>
           <td class="p-3 font-bold text-purple-900">${String(g.numeroGuia).padStart(3, '0')}</td>
@@ -1180,6 +1365,16 @@
           <td class="p-3">${g.de}</td>
           <td class="p-3">${g.para}</td>
           <td class="p-3 text-purple-700 font-medium">${g.malote || '-'}</td>
+          <td class="p-3 text-center whitespace-nowrap">
+            <div class="inline-flex items-center space-x-1.5">
+              <button onclick="abrirModalEdicaoGuia(${originalIndex})" title="Editar item" class="text-purple-600 hover:text-purple-900 bg-purple-100/80 hover:bg-purple-200 p-2 rounded-lg text-xs transition">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button onclick="abrirModalExclusaoGuia(${originalIndex})" title="Excluir item" class="text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg text-xs transition">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </td>
         </tr>
       `).join('');
     }
