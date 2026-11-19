@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -618,7 +618,7 @@
   <script>
     /* =========================================================================
        CONFIGURAÇÃO DE INTEGRAÇÃO (GOOGLE APPS SCRIPT)
-       Cole abaixo a URL do Web App implantado na sua planilha "Guia de Remessa"
+       URL do Web App implantado na planilha "Guia de Remessa"
        ========================================================================= */
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxv-DFiqxDQGosLJrsZnxPivIIUY0kEaaER0VSrTrYDBOGFAIj-G2GTFas1lHjBbM0ptA/exec"; 
 
@@ -722,6 +722,60 @@
     }
 
     /* =========================================================================
+       NORMALIZAÇÃO E FORMATAÇÃO SEGURA DE DATAS (CORRIGE LEITURA DO SHEETS)
+       ========================================================================= */
+    function normalizarDataISO(valor) {
+      if (!valor) return '';
+      const str = String(valor).trim();
+
+      // 1. Formato já limpo YYYY-MM-DD (ex: 2026-11-18)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        return str;
+      }
+
+      // 2. Formato ISO completo com T (ex: 2026-11-18T03:00:00.000Z)
+      if (/^\d{4}-\d{2}-\d{2}T/.test(str)) {
+        return str.substring(0, 10);
+      }
+
+      // 3. Formato brasileiro DD/MM/YYYY (ex: 18/11/2026)
+      if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+        const [d, m, y] = str.split('/');
+        return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      }
+
+      // 4. String padrão de Date do JavaScript / Google Apps Script (ex: "Wed Nov 18 2026 00:00:00 GMT-0300...")
+      const mesesEn = {
+        Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+        Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12'
+      };
+      const matchJsDate = str.match(/^[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
+      if (matchJsDate && mesesEn[matchJsDate[1]]) {
+        const mes = mesesEn[matchJsDate[1]];
+        const dia = matchJsDate[2].padStart(2, '0');
+        const ano = matchJsDate[3];
+        return `${ano}-${mes}-${dia}`;
+      }
+
+      // 5. Fallback via Date.parse
+      const parsed = new Date(str);
+      if (!isNaN(parsed.getTime())) {
+        return formatarChaveData(parsed);
+      }
+
+      return str;
+    }
+
+    function formatarDataBR(valor) {
+      const iso = normalizarDataISO(valor);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+        const [y, m, d] = iso.split('-');
+        return `${d}/${m}/${y}`;
+      }
+      return iso;
+    }
+
+    /* =========================================================================
        NAVEGAÇÃO, MODAIS E NOTIFICAÇÕES
        ========================================================================= */
     function switchTab(tab) {
@@ -758,14 +812,8 @@
       openModal('modalNotification');
     }
 
-    function formatarDataBR(iso) {
-      if (!iso || !iso.includes('-')) return iso || '';
-      const [y, m, d] = iso.split('-');
-      return `${d}/${m}/${y}`;
-    }
-
     /* =========================================================================
-       SINCRONIZAÇÃO COM GOOGLE SHEETS VIA JSONP (MESMA ESTRATÉGIA)
+       SINCRONIZAÇÃO COM GOOGLE SHEETS VIA JSONP
        ========================================================================= */
     function setSyncStatus(text, type) {
       const el = document.getElementById('syncStatus');
@@ -827,7 +875,13 @@
     async function carregarDados() {
       const localCache = localStorage.getItem('excellington_remessa_data');
       if (localCache) {
-        try { appData = Object.assign(appData, JSON.parse(localCache)); } catch (e) {}
+        try {
+          const parsed = JSON.parse(localCache);
+          if (Array.isArray(parsed.guias)) {
+            parsed.guias = parsed.guias.map(g => ({ ...g, data: normalizarDataISO(g.data) }));
+          }
+          appData = Object.assign(appData, parsed);
+        } catch (e) {}
       }
 
       if (!SCRIPT_URL) {
@@ -844,9 +898,14 @@
           if (res.destinatarios && res.destinatarios.length) appData.destinatarios = res.destinatarios;
           if (res.origens && res.origens.length) appData.origens = res.origens;
           if (res.destinos && res.destinos.length) appData.destinos = res.destinos;
-          if (Array.isArray(res.guias)) appData.guias = res.guias;
+          if (Array.isArray(res.guias)) {
+            appData.guias = res.guias.map(g => ({
+              ...g,
+              data: normalizarDataISO(g.data)
+            }));
+          }
 
-          localStorage.setItem('excellington_remessa_data', JSON.stringify(appData));
+          salvarLocalmente();
           setSyncStatus('<i class="fa-solid fa-cloud-check mr-1"></i> Sincronizado com Planilha', 'success');
         } else {
           setSyncStatus('<i class="fa-solid fa-triangle-exclamation mr-1"></i> Modo Local', 'local');
@@ -1006,7 +1065,7 @@
        LANÇAMENTO DA GUIA DE REMESSA
        ========================================================================= */
     function atualizarPreviewNumeracao() {
-      const dataIso = document.getElementById('guiaData').value;
+      const dataIso = normalizarDataISO(document.getElementById('guiaData').value);
       const destinatario = document.getElementById('guiaDestinatario').value;
       const infoEl = document.getElementById('infoDiaUtil');
       const numGuiaEl = document.getElementById('previewNumeroGuia');
@@ -1031,7 +1090,7 @@
         return;
       }
 
-      const itensExistentes = appData.guias.filter(g => g.data === dataIso && g.destinatario === destinatario);
+      const itensExistentes = appData.guias.filter(g => normalizarDataISO(g.data) === dataIso && g.destinatario === destinatario);
       const proximoItem = itensExistentes.length + 1;
       numItemEl.textContent = String(proximoItem).padStart(2, '0');
     }
@@ -1040,7 +1099,7 @@
     document.getElementById('guiaDestinatario').addEventListener('change', atualizarPreviewNumeracao);
 
     document.getElementById('btnAddItemGuia').addEventListener('click', async () => {
-      const dataIso = document.getElementById('guiaData').value;
+      const dataIso = normalizarDataISO(document.getElementById('guiaData').value);
       const remetente = document.getElementById('guiaRemetente').value;
       const destinatario = document.getElementById('guiaDestinatario').value;
       const de = document.getElementById('guiaDe').value;
@@ -1055,7 +1114,7 @@
 
       const calc = calcularNumeroDiaUtil(dataIso);
       const numeroGuia = calc.numero;
-      const itensExistentes = appData.guias.filter(g => g.data === dataIso && g.destinatario === destinatario);
+      const itensExistentes = appData.guias.filter(g => normalizarDataISO(g.data) === dataIso && g.destinatario === destinatario);
       const itemSeq = itensExistentes.length + 1;
 
       const novoRegistro = {
@@ -1149,7 +1208,7 @@
        IMPRESSÃO DE GUIAS (FILTRO POR DATA E DESTINATÁRIO)
        ========================================================================= */
     document.getElementById('btnGerarPreviewGuia').addEventListener('click', () => {
-      const dataFiltro = document.getElementById('filtroPrintData').value;
+      const dataFiltro = normalizarDataISO(document.getElementById('filtroPrintData').value);
       const destFiltro = document.getElementById('filtroPrintDestinatario').value;
 
       if (!dataFiltro || !destFiltro) {
@@ -1158,7 +1217,7 @@
       }
 
       const itens = appData.guias
-        .filter(g => g.data === dataFiltro && g.destinatario === destFiltro)
+        .filter(g => normalizarDataISO(g.data) === dataFiltro && g.destinatario === destFiltro)
         .sort((a, b) => a.item - b.item);
 
       if (!itens.length) {
