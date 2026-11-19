@@ -318,12 +318,19 @@
       <!-- Filtros de Impressão -->
       <div class="bg-white border border-purple-200 rounded-2xl shadow-sm p-6 no-print">
         <h2 class="text-lg font-bold text-purple-900 mb-1">Impressão de Guias de Remessa</h2>
-        <p class="text-xs text-purple-600 mb-4">Selecione a data e o destinatário do malote para gerar e imprimir a guia oficial com canhoto.</p>
+        <p class="text-xs text-purple-600 mb-4">Selecione a data, o remetente e o destinatário do malote para gerar e imprimir a guia oficial com canhoto.</p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
             <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Data da Guia</label>
             <input type="date" id="filtroPrintData" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">Remetente</label>
+            <select id="filtroPrintRemetente" class="w-full border border-purple-300 rounded-xl p-2.5 bg-purple-50/40 text-purple-950 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="">Selecione o remetente...</option>
+            </select>
           </div>
 
           <div>
@@ -728,23 +735,19 @@
       if (!valor) return '';
       const str = String(valor).trim();
 
-      // 1. Formato já limpo YYYY-MM-DD (ex: 2026-11-18)
       if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
         return str;
       }
 
-      // 2. Formato ISO completo com T (ex: 2026-11-18T03:00:00.000Z)
       if (/^\d{4}-\d{2}-\d{2}T/.test(str)) {
         return str.substring(0, 10);
       }
 
-      // 3. Formato brasileiro DD/MM/YYYY (ex: 18/11/2026)
       if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
         const [d, m, y] = str.split('/');
         return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
       }
 
-      // 4. String padrão de Date do JavaScript / Google Apps Script (ex: "Wed Nov 18 2026 00:00:00 GMT-0300...")
       const mesesEn = {
         Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
         Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12'
@@ -757,7 +760,6 @@
         return `${ano}-${mes}-${dia}`;
       }
 
-      // 5. Fallback via Date.parse
       const parsed = new Date(str);
       if (!isNaN(parsed.getTime())) {
         return formatarChaveData(parsed);
@@ -933,6 +935,7 @@
       popularSelect('guiaDestinatario', appData.destinatarios, 'Selecione o destinatário...');
       popularSelect('guiaDe', appData.origens, 'Selecione a origem...');
       popularSelect('guiaPara', appData.destinos, 'Selecione o destino...');
+      popularSelect('filtroPrintRemetente', appData.remetentes, 'Selecione o remetente...');
       popularSelect('filtroPrintDestinatario', appData.destinatarios, 'Selecione o destinatário...');
 
       atualizarPreviewNumeracao();
@@ -1205,25 +1208,26 @@
     });
 
     /* =========================================================================
-       IMPRESSÃO DE GUIAS (FILTRO POR DATA E DESTINATÁRIO)
+       IMPRESSÃO DE GUIAS (FILTRO POR DATA, REMETENTE E DESTINATÁRIO)
        ========================================================================= */
     document.getElementById('btnGerarPreviewGuia').addEventListener('click', () => {
       const dataFiltro = normalizarDataISO(document.getElementById('filtroPrintData').value);
+      const remFiltro = document.getElementById('filtroPrintRemetente').value;
       const destFiltro = document.getElementById('filtroPrintDestinatario').value;
 
-      if (!dataFiltro || !destFiltro) {
-        showNotification("Selecione a data e o destinatário do malote para visualizar a guia.", "Filtro Incompleto", true);
+      if (!dataFiltro || !remFiltro || !destFiltro) {
+        showNotification("Selecione a data, o remetente e o destinatário do malote para visualizar a guia.", "Filtro Incompleto", true);
         return;
       }
 
       const itens = appData.guias
-        .filter(g => normalizarDataISO(g.data) === dataFiltro && g.destinatario === destFiltro)
+        .filter(g => normalizarDataISO(g.data) === dataFiltro && g.remetente === remFiltro && g.destinatario === destFiltro)
         .sort((a, b) => a.item - b.item);
 
       if (!itens.length) {
         document.getElementById('printWrapper').classList.add('hidden');
         document.getElementById('btnImprimirAgora').classList.add('hidden');
-        showNotification("Nenhum item encontrado para esta data e destinatário.", "Sem Registros", true);
+        showNotification("Nenhum item encontrado para esta data, remetente e destinatário.", "Sem Registros", true);
         return;
       }
 
